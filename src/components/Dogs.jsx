@@ -24,7 +24,7 @@ const Dogs = () => {
 	return (
 		<div>
 			<div className="dog-app-container">
-				<h2>Get Random Dog Images</h2>
+				<h2>Get a Random Dog Image</h2>
 				<div classname="image-container">
 					<img src={dog} alt="Dog" />
 				</div>
