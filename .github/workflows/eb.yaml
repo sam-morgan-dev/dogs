@@ -1,0 +1,44 @@
+name: Deploy React App from Github to AWS Elastic Beanstalk
+on:
+  push:
+    branches:
+      - master
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [17.x]
+    steps:
+      - name: Checkout Latest Repo
+        uses: actions/checkout@v2
+
+      - name: Generate Deployment Package
+        run: zip -r deploy-dog-app.zip * -x "**.git**"
+
+      - name: Get timestamp
+        uses: gerred/actions/current-time@master
+        id: current-time
+
+      - name: Run string replace
+        uses: frabert/replace-string-action@master
+        id: format-time
+        with:
+          pattern: '[:\.]+'
+          string: "${{ steps.current-time.outputs.time }}"
+          replace-with: '-'
+          flags: 'g'
+
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: "${{ secrets.ACCESS_KEY }}"
+          aws_secret_key: "${{ secrets.SECRET_ACCESS_KEY }}"
+          application_name: react-app
+          environment_name: react-app-dev
+          version_label: "app-${{ steps.format-time.outputs.replaced }}"
+          region: eu-west-2
+          deployment_package: deploy-dog-app.zip
+
+      - name: Deployed!
+        run: echo App deployed to ELB
